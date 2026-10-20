@@ -1,0 +1,19 @@
+{
+  "video_seconds": 4.933333333333334,
+  "container_seconds": 4.999349,
+  "frames": 74,
+  "fps": 15.0,
+  "width": 714,
+  "height": 814,
+  "audio_present": true,
+  "generated_audio_rms": 0.08116314933269649,
+  "clipped_fraction": 0.0,
+  "distinct_video_frames": 74,
+  "speech_generation_seconds": 253.78,
+  "emotion_generation_seconds": 325,
+  "trimmed_reference_repeat_seconds": 1.36,
+  "voice_similarity": "Not independently verified; user listening required",
+  "realtime": false,
+  "iphone_tested": false,
+  "scope": "Private offline render; no change to live call inference or frontend"
+}

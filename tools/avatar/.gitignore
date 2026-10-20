@@ -1,0 +1,9 @@
+__pycache__/
+*.wav
+*.m4a
+*.mp4
+*.pth
+*.pt
+*.safetensors
+private-media/
+models/

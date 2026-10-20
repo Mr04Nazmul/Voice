@@ -1,0 +1,28 @@
+diff --git a/audio.py b/audio.py
+index 32b20c4..32ab5fa 100644
+--- a/audio.py
++++ b/audio.py
+@@ -97,7 +97,7 @@ def _linear_to_mel(spectogram):
+ 
+ def _build_mel_basis():
+     assert hp.fmax <= hp.sample_rate // 2
+-    return librosa.filters.mel(hp.sample_rate, hp.n_fft, n_mels=hp.num_mels,
++    return librosa.filters.mel(sr=hp.sample_rate, n_fft=hp.n_fft, n_mels=hp.num_mels,
+                                fmin=hp.fmin, fmax=hp.fmax)
+ 
+ def _amp_to_db(x):
+diff --git a/inference.py b/inference.py
+index 9069252..edb5e54 100644
+--- a/inference.py
++++ b/inference.py
+@@ -166,6 +166,10 @@ def _load(checkpoint_path):
+ 	return checkpoint
+ 
+ def load_model(path):
++	import zipfile
++	with zipfile.ZipFile(path) as archive:
++		if any("/code/" in name for name in archive.namelist()):
++			return torch.jit.load(path, map_location=device).eval()
+ 	model = Wav2Lip()
+ 	print("Load checkpoint from: {}".format(path))
+ 	checkpoint = _load(path)
