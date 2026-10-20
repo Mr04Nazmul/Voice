@@ -9,7 +9,7 @@ Live: https://mr04nazmul.github.io/Voice/
 1. Tap **Free AI চালু করো** to download the default 1.11 GB Qwen3-1.7B model (or choose the 397 MB experimental smaller option). Prefer Wi-Fi. The model runs in your browser using CPU WebAssembly; the phone needs additional memory and may be slow.
 2. Start a call and type in Bengali. Replies come from the local LLM, not a script.
 3. Enable microphone only after reading the audio-processing disclosure. Bengali speech recognition depends on your browser's speech service.
-4. Open Settings → test Bengali voice. Audio uses an installed Bengali system voice, or a free local robotic Bengali fallback (18.5 MB first download). This is not Sadia's cloned voice.
+4. Open Settings → test Bengali voice. Sadia reference-voice mode is explicitly unavailable until a cloning runtime is connected. Optional installed Bengali system voice or free robotic Bengali fallback (18.5 MB) can be selected separately. This is not Sadia's cloned voice.
 5. Camera is a local-only floating selfie preview. Ending the call or hiding the tab stops camera/microphone/speech.
 
 The supplied portrait appears by default. Local portrait and reference-audio selection is available. Reference audio playback does not clone a voice; the authorized private sample is not published.
@@ -32,3 +32,9 @@ Plain HTML/CSS/ES modules. No build step, paid backend, cloud inference or clien
 No substantive assistant replies are hardcoded. Missing model/voice/permissions are surfaced as errors, not disguised as working AI.
 
 Software license for the rewritten frontend: GPL-3.0-or-later. Third-party software and portrait/media rights remain separate. See THIRD-PARTY.md and FRONTEND-LICENSE.
+
+## Personal context
+
+Settings supports a local-only profile editor and private JSON import. Profile notes persist only in that browser and are treated as user-provided roleplay context, not the real Sadia’s memories. No private name/relationship defaults are committed to public source.
+
+**Observed limit:** all tested local models generated incorrect Bengali on a simple factual prompt; the 1.7B model was slow. This is not accepted as reliable intelligent Bengali conversation. See the test log before relying on responses.

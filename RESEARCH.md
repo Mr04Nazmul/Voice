@@ -43,3 +43,9 @@ See TEST-RESULTS.md for actual results. API feature detection is not equivalent 
 ## Model selection after actual testing
 
 Both the initial Qwen2.5-0.5B and replacement Qwen3-0.6B generated incorrect Bengali answers in the live browser. Their ability to run is not evidence of useful Bengali conversation. The interface now defaults to a larger Qwen3-1.7B Q4_K_M model, with a memory/download warning and a smaller experimental option. Real test results, including any remaining failures, belong in TEST-RESULTS.md. Neither variant is a guaranteed human-quality conversation model.
+
+## Authorized personalized voice status
+
+The user later required the original authorized voice specifically. Default mode therefore does not substitute a generic voice. IndicF5 (https://huggingface.co/ai4bharat/IndicF5) lists an MIT model license but gates weight access behind account/conditions acceptance. Its official workflow needs reference audio plus its exact transcript and Python inference. No user account access or suitable private runtime was available; the skill package does not contain a running model. No voice clone was rendered and no clone endpoint is claimed live. The supplied sample remains private.
+
+Private persona notes are stored locally only after save/import, and can be cleared. The public repository intentionally contains no private relationship profile. Tone settings affect prompts and optional generic speech rate/pitch, not facial emotions.
