@@ -103,7 +103,7 @@ let cameraRequest=0, facing='user';
 $('#cameraToggle').onclick=async()=>{if(state.stream){cameraOff();return;}const request=++cameraRequest,session=state.session;$('#cameraToggle').disabled=true;
  try{if(!navigator.mediaDevices?.getUserMedia)throw Error('Camera requires HTTPS and a supported browser');
   const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing},width:{ideal:320},height:{ideal:480}},audio:false});
-  if(request!==cameraRequest||state.session!==session){stream.getTracks().forEach(t=>t.stop());return;}
+  if(request!==cameraRequest||state.session!==session||document.hidden){stream.getTracks().forEach(t=>t.stop());return;}
   state.stream=stream;$('#camera').srcObject=stream;await $('#camera').play();$('#self').classList.add('on');$('#cameraToggle').setAttribute('aria-pressed','true');$('#cameraToggle').setAttribute('aria-label','Turn camera off');
  }catch(e){cameraOff();status('Camera: '+e.message);}finally{$('#cameraToggle').disabled=false;}};
 $('#switchCamera').onclick=async()=>{facing=facing==='user'?'environment':'user';cameraOff();await $('#cameraToggle').onclick();};
@@ -140,7 +140,7 @@ async function roboticSpeech(text,test){stopRecognition();stopSpeech();const epo
  const buffer=await context.decodeAudioData(wav);if(epoch!==state.audioEpoch)return;
  const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);state.audioSource=source;
  $('#voiceStatus').textContent=`Free Bengali audio generated: ${buffer.duration.toFixed(1)}s · ${buffer.length} samples · robotic, not cloned`;
- source.onended=()=>{if(epoch!==state.audioEpoch)return;state.audioSource=null;state.speaking=false;$('#app').classList.remove('speaking');if(state.active){status(state.muted?'মাইক বন্ধ · লিখে পাঠাও':'শুনছি…');listen();}};
+ source.onended=()=>{if(epoch!==state.audioEpoch)return;state.audioSource=null;state.speaking=false;$('#app').classList.remove('speaking');if(state.active){status(state.muted?'মাইক বন্ধ · লিখে পাঠাও':'শুনছি…');listen();}else status('Voice test শেষ হয়েছে');};
  source.start();$('#app').classList.add('speaking');status('Sadia AI · robotic বাংলা voice');
  }catch(e){if(epoch===state.audioEpoch){state.speaking=false;$('#app').classList.remove('speaking');status('Audio: '+e.message);$('#voiceStatus').textContent=e.message;if(state.active)listen();}}
 }
@@ -155,3 +155,5 @@ $('#saveProfile').onclick=()=>saveProfile({name:$('#profileName').value,notes:$(
 $('#clearProfile').onclick=()=>{state.profile=normalizeProfile({});showProfile();try{localStorage.removeItem('sadia-private-profile');$('#profileStatus').textContent='এই browser-এর private profile মুছে ফেলা হয়েছে।';}catch{$('#profileStatus').textContent='Session profile clear হয়েছে; storage clear করা যায়নি।';}};
 $('#profileImport').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;if(f.size>16000){$('#profileStatus').textContent='Profile file খুব বড়';return;}try{saveProfile(JSON.parse(await f.text()));}catch{$('#profileStatus').textContent='Valid profile JSON পাওয়া যায়নি।';}};
 showProfile();
+
+$('#voices').onchange=()=>{stopSpeech();status($('#voices').value==='clone'?'Sadia voice cloning সংযুক্ত নেই':'Optional generic voice বেছে নেওয়া হয়েছে');if(state.active)listen();};
