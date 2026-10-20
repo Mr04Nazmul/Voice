@@ -1,0 +1,41 @@
+# Sadia AI Live: technical decision record
+
+Reviewed 2026-10-20. Budget: $0. Frontend: GitHub Pages. No paid service, server inference, Colab, or secret client API key.
+
+## Chosen pipeline
+
+Local browser speech recognition (bn-BD, availability depends on browser/vendor service) → Qwen2.5-0.5B-Instruct GGUF Q4_K_M through wllama 2.3.7 WebAssembly → installed Bengali speechSynthesis voice. Text input and captions remain available when speech APIs or a Bengali voice are missing. Every substantive assistant reply is model-generated; no keyword response fallback.
+
+The Qwen download is 491 MB decimal according to its official file listing; memory usage is larger than the file. CPU single-thread inference avoids requiring WebGPU, SharedArrayBuffer, or COOP/COEP response headers, which default GitHub Pages hosting cannot configure. Model loading and inference run in a worker. 1024-token context, 120-token output and short history limit memory. Small-model Bengali quality is experimental; this does not match a cloud frontier model. No claim of real-time latency on an iPhone.
+
+wllama version 2.3.7 is vendored with its WebAssembly binary. Its API and that exact build were inspected; current version 3 documentation has a different API and is not used. Qwen weights are downloaded from a pinned official revision; voice samples are never sent to Hugging Face. Cache stays in the browser. The in-app delete control clears the wllama cache and local session media.
+
+## Evaluated options
+
+| Technology | License / resources verified | Decision |
+| --- | --- | --- |
+| [wllama](https://github.com/ngxson/wllama/tree/2.3.7) | MIT; browser CPU WASM SIMD, worker, single-thread available; weights separately licensed | Chosen for no-GPU execution. No model-sized files committed to GitHub. |
+| [Qwen2.5 0.5B GGUF](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/tree/9217f5db79a29953eb74d5343926648285ec7e67) | Apache 2.0; official Q4_K_M 491 MB; 0.49B parameters | Chosen small multilingual LLM; Bengali usefulness must be tested, not assumed. |
+| [WebLLM](https://github.com/mlc-ai/web-llm) | Apache 2.0; WebGPU browser LLM, model weights have separate licenses; model-dependent hundreds of MB to multiple GB | Real option on compatible GPUs. Not the default because the user's older iOS and mobile memory cannot be assumed compatible. No unverified Safari version claim. |
+| [Transformers.js](https://huggingface.co/docs/transformers.js/index) | Apache 2.0; ONNX Runtime browser WASM/WebGPU; model size varies by model and quantization | Valid alternative for Whisper and LLMs. Stacking STT + LLM + TTS models adds memory/download overhead. Not added without an on-device memory validation. |
+| [MediaPipe face landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker) | MediaPipe Apache 2.0 code; model assets separately distributed. Face landmarks/blendshapes, not photo-to-talking-video generation | Does not solve photorealistic audio-driven mouth generation. Not loaded on the call screen. |
+| [TalkingHead](https://github.com/met4citizen/TalkingHead) | MIT JavaScript; Three.js rigged GLB avatar and morph targets required; asset size depends on avatar, speech provider separate | Good real 3D lip-sync, but an arbitrary portrait is not a rigged GLB. Would replace facial likeness with a different 3D character. Not misrepresented as a photo animator. |
+| [LiveTalking](https://github.com/lipku/LiveTalking) | Apache 2.0 wrapper; submodels retain own terms; Python, model weights and GPU inference per lip-sync stream | Cannot execute on GitHub Pages. Documentation recommends GPU hardware; no free always-on GPU endpoint verified. |
+| [MuseTalk](https://github.com/TMElyralab/MuseTalk) | MIT code; project permits trained-model commercial use, dependencies separately licensed; Python/PyTorch stack and multiple checkpoints. Reports 30fps+ on Tesla V100, 256×256 face region | Not browser-ready; V100 benchmark is not iPhone capability. Identity details can change. Not deployed. |
+| [Wav2Lip](https://github.com/Rudrabha/Wav2Lip) | Original open-source pretrained pipeline restricted to personal/research/noncommercial use due to LRS2; Python/ffmpeg + detector/checkpoints | Not a browser module or unrestricted production model. Not deployed. |
+| [LivePortrait](https://github.com/KlingAIResearch/LivePortrait) | MIT project; bundled dependencies including InsightFace have additional model restrictions; Python, multiple checkpoints, motion source | Motion transfer is not alone audio-conditioned Bengali lip-sync. Cannot run as a stock GitHub Pages script. Not deployed. |
+| Browser STT/TTS | Browser/OS service terms; no downloadable JS voice model; available languages vary | Feature detection and explicit Bengali voice matching, no promise of Bengali voice installation or offline speech recognition. |
+
+For unselected server avatar stacks, no single bundle size is asserted: detector, speech, VAE, enhancement and avatar assets vary. No combined checkpoint set was downloaded or browser-ported. None is claimed runnable at $0 on iPhone.
+
+## Facial rendering
+
+The authorized portrait is displayed unchanged as a still image. A five-bar indicator appears only during speechSynthesis speaking events. Its heights are decorative, not measured audio amplitude. It is neither facial animation nor phoneme lip-sync. No CSS head zoom or fake mouth is used. This preserves the source appearance exactly but does not fulfill realistic talking-face video.
+
+## Privacy
+
+Camera uses getUserMedia(video only), local muted playsinline preview, no recorder or upload. End-call, tab hiding and pagehide stop tracks. Microphone requires a separate disclosure because browser SpeechRecognition may send audio to the browser vendor. Uploaded portrait/reference audio use temporary object URLs. No private voice sample is committed. The default portrait is intentionally public as requested. Chats are memory-only, rendered as text, never HTML; no analytics or API keys. Model downloads reveal ordinary network metadata to Hugging Face; local inference does not send chat there.
+
+## Testing scope
+
+See TEST-RESULTS.md for actual results. API feature detection is not equivalent to speech recognition success. A desktop/WebKit or mobile viewport test is not a physical iPhone test. Audible Bengali output, real microphone recognition, and iPhone Safari remain unverified unless the test log explicitly records them.

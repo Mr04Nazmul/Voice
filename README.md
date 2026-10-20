@@ -1,28 +1,32 @@
-# Sadia AI Live — GPU-free browser prototype
+# Sadia AI Live
 
-A mobile-first Bengali video-call **demo** that runs as a static website without a cloud GPU.
+A $0, GitHub Pages-only Bengali AI photo-call assistant. **This is not photorealistic live video, voice cloning, or lip-sync.**
 
-### Implemented
-- Mobile video-call interface and local portrait upload
-- Browser-based Bengali text input, speech synthesis and speech recognition (if supported)
-- Simple speech-timed portrait motion; **not actual lip-sync**
-- Optional self-camera preview, mute, call and hang-up
-- Limited local rule-based responses (not a full AI model)
+Live: https://mr04nazmul.github.io/Voice/
 
-### Limitations
-- No photorealistic face animation or real-time AI-generated video
-- No integrated LLM or talking-avatar API
-- Bengali browser voices and speech recognition may be unavailable on iOS
-- Camera access requires HTTPS and permission
-- Portrait selected by the user stays in their browser session; it is not uploaded
+## Use
 
-### Hosting
-GitHub Pages can serve `index.html` and `app.js`. Enable Pages in repository settings if not already enabled.
+1. Tap **Free AI চালু করো** to download the 491 MB Qwen model. Prefer Wi-Fi. The model runs in your browser using CPU WebAssembly; the phone needs additional memory and may be slow.
+2. Start a call and type in Bengali. Replies come from the local LLM, not a script.
+3. Enable microphone only after reading the audio-processing disclosure. Bengali speech recognition depends on your browser's speech service.
+4. Open Settings → test Bengali voice. Audio requires an installed Bengali system voice. This is not Sadia's cloned voice.
+5. Camera is a local-only floating selfie preview. Ending the call or hiding the tab stops camera/microphone/speech.
 
-### Future real-avatar integration
-A verified hosted avatar provider or GPU-backed inference server would be required for realistic photo-to-video lip-sync. A verified LLM API needs a secure backend; never expose secret keys in client-side JavaScript.
+The supplied portrait appears by default. Local portrait and reference-audio selection is available. Reference audio playback does not clone a voice; the authorized private sample is not published.
 
-## Deployment status (2026-10-20)
-The Python backend has not been deployed or configured with an LLM provider. The static UI uses demo responses until window.SADIA_API_URL is set to a deployed HTTPS backend. LiveTalking requires a separate GPU-backed service; it cannot run on GitHub Pages. No voice cloning or real-time lip-sync is currently deployed.
+## Hosting and implementation
 
-Backend environment: LLM_BASE_URL (HTTPS OpenAI-compatible API base), LLM_MODEL, optional LLM_API_KEY, and ALLOWED_ORIGINS. Keep secrets server-side.
+Plain HTML/CSS/ES modules. No build step, paid backend, cloud inference or client secret keys. wllama 2.3.7 and its single-thread WASM are vendored; Qwen weights download from the official pinned Hugging Face revision and cache locally. The original backend/ files are preserved for reference and are **not deployed or used** by the application.
+
+[Technology evaluation](RESEARCH.md) · [Verified test results](TEST-RESULTS.md)
+
+## Limitations
+
+- Still portrait and speech-activity bars, not face animation or generated video.
+- No personalized voice cloning.
+- Small local model may produce poor Bengali, inaccuracies, or slow replies.
+- No guaranteed browser Bengali STT/TTS; text fallback is always available after model load.
+- Physical iPhone Safari/Android device tests must not be inferred from desktop automation.
+- First model load needs internet, storage and sufficient memory. Mobile OS may terminate the tab.
+
+No substantive assistant replies are hardcoded. Missing model/voice/permissions are surfaced as errors, not disguised as working AI.
