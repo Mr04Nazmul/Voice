@@ -6,7 +6,7 @@ Reviewed 2026-10-20. Budget: $0. Frontend: GitHub Pages. No paid service, server
 
 Local browser speech recognition (bn-BD, availability depends on browser/vendor service) → Qwen3-1.7B (default, 1,107,409,472 bytes) or Qwen3-0.6B (396,705,472 bytes) GGUF Q4_K_M through wllama 2.3.7 WebAssembly → installed Bengali speechSynthesis voice or local eSpeak NG Bengali synthesis. Text input and captions remain available when speech APIs or a Bengali voice are missing. Every substantive assistant reply is model-generated; no keyword response fallback.
 
-The small Qwen download is 397 MB decimal and the default is 1.11 GB, verified through Hugging Face file metadata; memory usage is larger than the file. CPU single-thread inference avoids requiring WebGPU, SharedArrayBuffer, or COOP/COEP response headers, which default GitHub Pages hosting cannot configure. Model loading and inference run in a worker. 1024-token context, 120-token output and short history limit memory. Small-model Bengali quality is experimental; this does not match a cloud frontier model. No claim of real-time latency on an iPhone.
+The small Qwen download is 397 MB decimal and the default is 1.11 GB, verified through Hugging Face file metadata; memory usage is larger than the file. CPU single-thread inference avoids requiring WebGPU, SharedArrayBuffer, or COOP/COEP response headers, which default GitHub Pages hosting cannot configure. Model loading and inference run in a worker. 1024-token context, 100-token output and short history limit memory. Small-model Bengali quality is experimental; this does not match a cloud frontier model. No claim of real-time latency on an iPhone.
 
 wllama version 2.3.7 is vendored with its WebAssembly binary. Its API and that exact build were inspected; current version 3 documentation has a different API and is not used. Qwen weights are downloaded from a pinned Unsloth quantization revision; voice samples are never sent to Hugging Face. Cache stays in the browser. The in-app delete control clears the wllama cache and local session media.
 
@@ -15,7 +15,7 @@ wllama version 2.3.7 is vendored with its WebAssembly binary. Its API and that e
 | Technology | License / resources verified | Decision |
 | --- | --- | --- |
 | [wllama](https://github.com/ngxson/wllama/tree/2.3.7) | MIT; browser CPU WASM SIMD, worker, single-thread available; weights separately licensed | Chosen for no-GPU execution. No model-sized files committed to GitHub. |
-| [Qwen3 0.6B GGUF](https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/tree/9217f5db79a29953eb74d5343926648285ec7e67) | Apache 2.0; Unsloth Q4_K_M 397 MB; 0.6B parameters | Chosen small multilingual LLM; Bengali usefulness must be tested, not assumed. |
+| [Qwen3 0.6B GGUF](https://huggingface.co/unsloth/Qwen3-0.6B-GGUF/tree/50968a4468ef4233ed78cd7c3de230dd1d61a56b) | Apache 2.0; Unsloth Q4_K_M 397 MB; 0.6B parameters | Chosen small multilingual LLM; Bengali usefulness must be tested, not assumed. |
 | [WebLLM](https://github.com/mlc-ai/web-llm) | Apache 2.0; WebGPU browser LLM, model weights have separate licenses; model-dependent hundreds of MB to multiple GB | Real option on compatible GPUs. Not the default because the user's older iOS and mobile memory cannot be assumed compatible. No unverified Safari version claim. |
 | [Transformers.js](https://huggingface.co/docs/transformers.js/index) | Apache 2.0; ONNX Runtime browser WASM/WebGPU; model size varies by model and quantization | Valid alternative for Whisper and LLMs. Stacking STT + LLM + TTS models adds memory/download overhead. Not added without an on-device memory validation. |
 | [MediaPipe face landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker) | MediaPipe Apache 2.0 code; model assets separately distributed. Face landmarks/blendshapes, not photo-to-talking-video generation | Does not solve photorealistic audio-driven mouth generation. Not loaded on the call screen. |
@@ -30,7 +30,7 @@ For unselected server avatar stacks, no single bundle size is asserted: detector
 
 ## Facial rendering
 
-The latest user-supplied clean portrait is displayed unchanged as a still image, with a versioned URL to avoid stale image caches. A five-bar indicator appears only during speechSynthesis speaking events. Its heights are decorative, not measured audio amplitude. It is neither facial animation nor phoneme lip-sync. No CSS head zoom or fake mouth is used. This preserves the source appearance exactly but does not fulfill realistic talking-face video.
+The earlier user-preferred portrait was restored at their final request and is displayed unchanged as a still image, with a versioned URL to avoid stale image caches. A five-bar indicator appears during native speech events or local fallback audio playback. Its heights are decorative, not measured audio amplitude. It is neither facial animation nor phoneme lip-sync. No CSS head zoom or fake mouth is used. This preserves the source appearance exactly but does not fulfill realistic talking-face video.
 
 ## Privacy
 
