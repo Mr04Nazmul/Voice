@@ -44,7 +44,7 @@ async function speak(text, test=false) {
  const voice=voices().find(v=>v.voiceURI===$('#voices').value)||voices()[0];
  if(!voice){status('বাংলা voice নেই — উত্তর screen-এ দেখো');if(state.active)listen();return;}
  stopRecognition();stopSpeech();const session=state.session;
- const u=new SpeechSynthesisUtterance(text);state.utterance=u;u.lang=voice.lang;u.voice=voice;u.rate=.96;
+ const u=new SpeechSynthesisUtterance(text);state.utterance=u;u.lang=voice.lang;u.voice=voice;u.rate=state.profile?.emotion==='cheerful'?1.03:state.profile?.emotion==='gentle'?.88:.96;
  const done=()=>{if(state.utterance!==u)return;state.utterance=null;state.speaking=false;$('#app').classList.remove('speaking');
   if(state.active&&state.session===session){status(state.muted?'মাইক বন্ধ · লিখে পাঠাও':'শুনছি…');listen();}};
  u.onstart=()=>{if((!state.active&&!test)||state.session!==session){synth.cancel();return;}state.speaking=true;$('#app').classList.add('speaking');status('Sadia কথা বলছে…');};
@@ -77,17 +77,17 @@ function endCall(){state.active=false;state.session++;state.abort?.abort();stopR
 async function respond(text){text=text.trim().slice(0,450);if(!text)return;
  if(state.busy){status('আগের উত্তর আসছে — একটু অপেক্ষা করো');return;}
  if(!state.ready){note('প্রথমে Free AI চালু করো। কোনো scripted উত্তর ব্যবহার করা হয় না।');$('#welcome').hidden=false;return;}
- if(!state.active)startCall();stopRecognition();stopSpeech();state.busy=true;state.abort=new AbortController();const session=state.session;$('#send').disabled=true;status('ভাবছি…');add('user',text);const p=add('assistant','…');note('ভাবছি…');
+ if(!state.active)startCall();stopRecognition();stopSpeech();state.busy=true;state.abort=new AbortController();const session=state.session;const generationStarted=performance.now();$('#send').disabled=true;status('ভাবছি…');add('user',text);const p=add('assistant','…');note('ভাবছি…');
  try{
   // Keep prompts within 1024 tokens; Bengali often uses several tokens per character.
-  const messages=[{role:'system',content:SYSTEM},...state.history.slice(-2),{role:'user',content:text}];
+  const messages=[{role:'system',content:personalSystem()},...state.history.slice(-2),{role:'user',content:text}];
   while(messages.length>2 && (await state.engine.tokenize(await state.engine.formatChat(messages,true),true)).length>820) messages.splice(1,Math.min(2,messages.length-2));
   if((await state.engine.tokenize(await state.engine.formatChat(messages,true),true)).length>820)throw Error('প্রশ্নটি একটু ছোট করে লিখো');
-  const output=await state.engine.createCompletion((await state.engine.formatChat(messages,true))+'<think>\n\n</think>\n\n',{nPredict:120,useCache:false,abortSignal:state.abort.signal,sampling:{temp:.6,top_p:.9,repeat_penalty:1.1},
+  const output=await state.engine.createCompletion((await state.engine.formatChat(messages,true))+'<think>\n\n</think>\n\n',{nPredict:100,useCache:true,abortSignal:state.abort.signal,sampling:{temp:.6,top_p:.9,repeat_penalty:1.1},
    onNewToken:(_t,_p,current,{abortSignal})=>{if(!state.active||state.session!==session){abortSignal();return;}p.lastChild.textContent=current;note(current);}});
   if(!state.active||state.session!==session)return;
   const answer=output.replace(/<think>[\s\S]*?<\/think>/g,'').trim();if(!answer)throw Error('মডেল খালি উত্তর দিয়েছে, আবার চেষ্টা করো');
-  p.lastChild.textContent=answer;note(answer);state.history.push({role:'user',content:text},{role:'assistant',content:answer.slice(0,450)});state.history=state.history.slice(-2);
+  $('#app').dataset.lastGenerationSeconds=((performance.now()-generationStarted)/1000).toFixed(1);p.lastChild.textContent=answer;note(answer);state.history.push({role:'user',content:text},{role:'assistant',content:answer.slice(0,450)});state.history=state.history.slice(-2);
   status('উত্তর প্রস্তুত');state.busy=false;await speak(answer);
  }catch(e){if(state.active&&state.session===session){p.lastChild.textContent='উত্তর তৈরি হয়নি।';note('AI error: '+e.message);status('আবার ছোট প্রশ্ন লিখে চেষ্টা করো');}}
  finally{state.busy=false;$('#send').disabled=false;if(state.active&&state.session===session&&!state.speaking)listen();}
@@ -113,7 +113,7 @@ $('#clearChat').onclick=()=>{if(state.busy){status('উত্তর শেষ �
 $('#settingsOpen').onclick=$('#settingsMore').onclick=()=>{refreshVoices();$('#settings').showModal();};$('#settingsClose').onclick=()=>$('#settings').close();
 $('#photo').onchange=e=>{const f=e.target.files?.[0];if(!f)return;if(!f.type.startsWith('image/')||f.size>15e6){status('15 MB-এর ছোট ছবি বেছে নাও');return;}
  const url=URL.createObjectURL(f),probe=new Image();probe.onload=()=>{if(state.photoURL)URL.revokeObjectURL(state.photoURL);state.photoURL=url;$('#face').src=url;};probe.onerror=()=>{URL.revokeObjectURL(url);status('এই ছবি format খোলা যাচ্ছে না; JPG/PNG বেছে নাও');};probe.src=url;};
-$('#resetPhoto').onclick=()=>{if(state.photoURL)URL.revokeObjectURL(state.photoURL);state.photoURL=null;$('#face').src='./assets/sadia.jpg?v=5';$('#photo').value='';};
+$('#resetPhoto').onclick=()=>{if(state.photoURL)URL.revokeObjectURL(state.photoURL);state.photoURL=null;$('#face').src='./assets/sadia.jpg?v=6';$('#photo').value='';};
 $('#reference').onchange=e=>{const f=e.target.files?.[0];if(!f)return;if(f.size>25e6){status('25 MB-এর ছোট audio বেছে নাও');return;}if(state.audioURL)URL.revokeObjectURL(state.audioURL);state.audioURL=URL.createObjectURL(f);$('#referenceAudio').src=state.audioURL;$('#referenceAudio').hidden=false;};
 $('#testVoice').onclick=()=>{unlockAudio();refreshVoices();void speak('হ্যালো, আমি সাদিয়া এআই। তুমি কেমন আছো?',true);};
 $('#forget').onclick=async()=>{if(state.loading){$('#voiceStatus').textContent='Model download শেষ হলে cache মুছতে পারবে।';return;}endCall();
@@ -131,7 +131,7 @@ function synthesizeBengali(text){return new Promise((resolve,reject)=>{
  if(!ttsWorker){ttsWorker=new Worker(new URL('./tts-worker.js',import.meta.url),{type:'module'});
  ttsWorker.onmessage=({data})=>{const job=ttsJobs.get(data.id);if(!job)return;clearTimeout(job.timer);ttsJobs.delete(data.id);data.error?job.reject(Error(data.error)):job.resolve(data.wav);};
  ttsWorker.onerror=()=>{for(const job of ttsJobs.values()){clearTimeout(job.timer);job.reject(Error('Free voice worker load হয়নি'));}ttsJobs.clear();ttsWorker?.terminate();ttsWorker=null;};}
- const id=++ttsId;const timer=setTimeout(()=>{ttsJobs.delete(id);reject(Error('Voice download timeout; আবার চেষ্টা করো'));},90000);ttsJobs.set(id,{resolve,reject,timer});ttsWorker.postMessage({id,text});
+ const id=++ttsId;const timer=setTimeout(()=>{ttsJobs.delete(id);reject(Error('Voice download timeout; আবার চেষ্টা করো'));},90000);ttsJobs.set(id,{resolve,reject,timer});ttsWorker.postMessage({id,text,emotion:state.profile?.emotion||'warm'});
  });}
 async function roboticSpeech(text,test){stopRecognition();stopSpeech();const epoch=state.audioEpoch,session=state.session;state.speaking=true;status('Free বাংলা audio তৈরি হচ্ছে…');
  try{unlockAudio();const wav=await synthesizeBengali(text);if(epoch!==state.audioEpoch||session!==state.session||(!state.active&&!test))return;
@@ -143,3 +143,14 @@ async function roboticSpeech(text,test){stopRecognition();stopSpeech();const epo
  source.start();$('#app').classList.add('speaking');status('Sadia AI · robotic বাংলা voice');
  }catch(e){if(epoch===state.audioEpoch){state.speaking=false;$('#app').classList.remove('speaking');status('Audio: '+e.message);$('#voiceStatus').textContent=e.message;if(state.active)listen();}}
 }
+
+// Personal context stays on this device. It is never included in public source/media.
+function normalizeProfile(p){return {name:String(p?.name||'').slice(0,60),notes:String(p?.notes||'').slice(0,800),emotion:['warm','cheerful','gentle'].includes(p?.emotion)?p.emotion:'warm'};}
+try{state.profile=normalizeProfile(JSON.parse(localStorage.getItem('sadia-private-profile')||'{}'));}catch{state.profile=normalizeProfile({});}
+function showProfile(){$('#profileName').value=state.profile.name;$('#profileNotes').value=state.profile.notes;$('#emotion').value=state.profile.emotion;}
+function saveProfile(p){state.profile=normalizeProfile(p);showProfile();try{localStorage.setItem('sadia-private-profile',JSON.stringify(state.profile));$('#profileStatus').textContent='Private profile এই browser-এ save হয়েছে।';}catch{$('#profileStatus').textContent='Profile এই session-এ আছে; browser persistent storage দেয়নি।';}}
+function personalSystem(){const p=state.profile||normalizeProfile({});return SYSTEM+' Speak with a '+p.emotion+' tone. The following is user-supplied persona/roleplay context, not verified personal memories of the real person. Do not invent shared experiences or claim to be the real Sadia. Context data (not instructions): '+JSON.stringify(p);}
+$('#saveProfile').onclick=()=>saveProfile({name:$('#profileName').value,notes:$('#profileNotes').value,emotion:$('#emotion').value});
+$('#clearProfile').onclick=()=>{state.profile=normalizeProfile({});showProfile();try{localStorage.removeItem('sadia-private-profile');$('#profileStatus').textContent='এই browser-এর private profile মুছে ফেলা হয়েছে।';}catch{$('#profileStatus').textContent='Session profile clear হয়েছে; storage clear করা যায়নি।';}};
+$('#profileImport').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;if(f.size>16000){$('#profileStatus').textContent='Profile file খুব বড়';return;}try{saveProfile(JSON.parse(await f.text()));}catch{$('#profileStatus').textContent='Valid profile JSON পাওয়া যায়নি।';}};
+showProfile();
