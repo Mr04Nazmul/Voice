@@ -4,18 +4,18 @@ Reviewed 2026-10-20. Budget: $0. Frontend: GitHub Pages. No paid service, server
 
 ## Chosen pipeline
 
-Local browser speech recognition (bn-BD, availability depends on browser/vendor service) → Qwen2.5-0.5B-Instruct GGUF Q4_K_M through wllama 2.3.7 WebAssembly → installed Bengali speechSynthesis voice. Text input and captions remain available when speech APIs or a Bengali voice are missing. Every substantive assistant reply is model-generated; no keyword response fallback.
+Local browser speech recognition (bn-BD, availability depends on browser/vendor service) → Qwen3-0.6B GGUF Q4_K_M through wllama 2.3.7 WebAssembly → installed Bengali speechSynthesis voice. Text input and captions remain available when speech APIs or a Bengali voice are missing. Every substantive assistant reply is model-generated; no keyword response fallback.
 
-The Qwen download is 491 MB decimal according to its official file listing; memory usage is larger than the file. CPU single-thread inference avoids requiring WebGPU, SharedArrayBuffer, or COOP/COEP response headers, which default GitHub Pages hosting cannot configure. Model loading and inference run in a worker. 1024-token context, 120-token output and short history limit memory. Small-model Bengali quality is experimental; this does not match a cloud frontier model. No claim of real-time latency on an iPhone.
+The Qwen download is 397 MB decimal according to its official file listing; memory usage is larger than the file. CPU single-thread inference avoids requiring WebGPU, SharedArrayBuffer, or COOP/COEP response headers, which default GitHub Pages hosting cannot configure. Model loading and inference run in a worker. 1024-token context, 120-token output and short history limit memory. Small-model Bengali quality is experimental; this does not match a cloud frontier model. No claim of real-time latency on an iPhone.
 
-wllama version 2.3.7 is vendored with its WebAssembly binary. Its API and that exact build were inspected; current version 3 documentation has a different API and is not used. Qwen weights are downloaded from a pinned official revision; voice samples are never sent to Hugging Face. Cache stays in the browser. The in-app delete control clears the wllama cache and local session media.
+wllama version 2.3.7 is vendored with its WebAssembly binary. Its API and that exact build were inspected; current version 3 documentation has a different API and is not used. Qwen weights are downloaded from a pinned Unsloth quantization revision; voice samples are never sent to Hugging Face. Cache stays in the browser. The in-app delete control clears the wllama cache and local session media.
 
 ## Evaluated options
 
 | Technology | License / resources verified | Decision |
 | --- | --- | --- |
 | [wllama](https://github.com/ngxson/wllama/tree/2.3.7) | MIT; browser CPU WASM SIMD, worker, single-thread available; weights separately licensed | Chosen for no-GPU execution. No model-sized files committed to GitHub. |
-| [Qwen2.5 0.5B GGUF](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/tree/9217f5db79a29953eb74d5343926648285ec7e67) | Apache 2.0; official Q4_K_M 491 MB; 0.49B parameters | Chosen small multilingual LLM; Bengali usefulness must be tested, not assumed. |
+| [Qwen3 0.6B GGUF](https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/tree/9217f5db79a29953eb74d5343926648285ec7e67) | Apache 2.0; official Q4_K_M 397 MB; 0.6B parameters | Chosen small multilingual LLM; Bengali usefulness must be tested, not assumed. |
 | [WebLLM](https://github.com/mlc-ai/web-llm) | Apache 2.0; WebGPU browser LLM, model weights have separate licenses; model-dependent hundreds of MB to multiple GB | Real option on compatible GPUs. Not the default because the user's older iOS and mobile memory cannot be assumed compatible. No unverified Safari version claim. |
 | [Transformers.js](https://huggingface.co/docs/transformers.js/index) | Apache 2.0; ONNX Runtime browser WASM/WebGPU; model size varies by model and quantization | Valid alternative for Whisper and LLMs. Stacking STT + LLM + TTS models adds memory/download overhead. Not added without an on-device memory validation. |
 | [MediaPipe face landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker) | MediaPipe Apache 2.0 code; model assets separately distributed. Face landmarks/blendshapes, not photo-to-talking-video generation | Does not solve photorealistic audio-driven mouth generation. Not loaded on the call screen. |

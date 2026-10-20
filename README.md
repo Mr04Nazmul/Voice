@@ -6,7 +6,7 @@ Live: https://mr04nazmul.github.io/Voice/
 
 ## Use
 
-1. Tap **Free AI চালু করো** to download the 491 MB Qwen model. Prefer Wi-Fi. The model runs in your browser using CPU WebAssembly; the phone needs additional memory and may be slow.
+1. Tap **Free AI চালু করো** to download the 397 MB Qwen model. Prefer Wi-Fi. The model runs in your browser using CPU WebAssembly; the phone needs additional memory and may be slow.
 2. Start a call and type in Bengali. Replies come from the local LLM, not a script.
 3. Enable microphone only after reading the audio-processing disclosure. Bengali speech recognition depends on your browser's speech service.
 4. Open Settings → test Bengali voice. Audio requires an installed Bengali system voice. This is not Sadia's cloned voice.
@@ -16,7 +16,7 @@ The supplied portrait appears by default. Local portrait and reference-audio sel
 
 ## Hosting and implementation
 
-Plain HTML/CSS/ES modules. No build step, paid backend, cloud inference or client secret keys. wllama 2.3.7 and its single-thread WASM are vendored; Qwen weights download from the official pinned Hugging Face revision and cache locally. The original backend/ files are preserved for reference and are **not deployed or used** by the application.
+Plain HTML/CSS/ES modules. No build step, paid backend, cloud inference or client secret keys. wllama 2.3.7 and its single-thread WASM are vendored; Qwen weights download from the pinned Unsloth Hugging Face revision and cache locally. The original backend/ files are preserved for reference and are **not deployed or used** by the application.
 
 [Technology evaluation](RESEARCH.md) · [Verified test results](TEST-RESULTS.md)
 
