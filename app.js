@@ -17,11 +17,11 @@ function add(role,text) { const p=document.createElement('p');p.className=role;
 function stopRecognition() { clearTimeout(state.restart);state.restart=null;try{state.recognition?.abort();}catch{} }
 function stopSpeech() { state.audioEpoch=(state.audioEpoch||0)+1;try{state.audioSource?.stop();}catch{}state.audioSource=null; state.utterance=null;state.speaking=false;synth?.cancel();$('#app').classList.remove('speaking'); }
 function voices() { return synth?.getVoices().filter(v=>/^bn(?:-|_|$)/i.test(v.lang)) || []; }
-function refreshVoices() { const selected=$('#voices').value;$('#voices').replaceChildren();const list=voices();
+function refreshVoices() { const selected=$('#voices').value||'clone';$('#voices').replaceChildren();const clone=document.createElement('option');clone.value='clone';clone.textContent='Sadia reference voice · cloning runtime সংযুক্ত নেই';$('#voices').append(clone);const list=voices();
  const fallback=document.createElement('option');fallback.value='robot';fallback.textContent='Free Bengali · robotic local voice (18.5 MB)';
  for(const v of list){const o=document.createElement('option');o.value=v.voiceURI;o.textContent=v.name+' · '+v.lang;$('#voices').append(o);}
- $('#voices').append(fallback);if(selected==='robot'||list.some(v=>v.voiceURI===selected))$('#voices').value=selected;
- $('#voiceStatus').textContent=list.length?'System TTS, Sadia-এর cloned voice নয়।':'বাংলা system voice নেই। Free local robotic voice ব্যবহার হবে; এটি Sadia-এর কণ্ঠ নয়। প্রথমবার 18.5 MB download।';
+ $('#voices').append(fallback);if(selected==='clone'||selected==='robot'||list.some(v=>v.voiceURI===selected))$('#voices').value=selected;
+ $('#voiceStatus').textContent=list.length?'System TTS, Sadia-এর cloned voice নয়।':'Sadia voice cloning এখনও সংযুক্ত নেই। চাইলে generic robotic voice আলাদা করে বেছে নিতে পারো; এটি Sadia-এর কণ্ঠ নয়।';
 }
 refreshVoices();synth?.addEventListener('voiceschanged',refreshVoices);
 function listen() {
@@ -40,6 +40,7 @@ function listen() {
 function updateMic(){ $('#mute').setAttribute('aria-pressed',String(state.muted));$('#mute').setAttribute('aria-label',state.muted?'Unmute microphone':'Mute microphone');$('#micLabel').textContent=state.muted?'মাইক বন্ধ':'শুনছি'; }
 async function speak(text, test=false) {
  if(state.silent||(!state.active&&!test)){if(state.active)listen();return;}
+ if($('#voices').value==='clone'){status('Sadia-এর নিজের কণ্ঠের inference সংযুক্ত নেই; উত্তর text-এ দেখো');$('#voiceStatus').textContent='Reference sample পাওয়া আছে, কিন্তু নতুন কথার voice cloning চালু হয়নি। Optional generic voices আলাদাভাবে বেছে নেওয়া যায়।';if(state.active)listen();return;}
  if($('#voices').value==='robot'){await roboticSpeech(text,test);return;}
  const voice=voices().find(v=>v.voiceURI===$('#voices').value)||voices()[0];
  if(!voice){status('বাংলা voice নেই — উত্তর screen-এ দেখো');if(state.active)listen();return;}
@@ -113,7 +114,7 @@ $('#clearChat').onclick=()=>{if(state.busy){status('উত্তর শেষ �
 $('#settingsOpen').onclick=$('#settingsMore').onclick=()=>{refreshVoices();$('#settings').showModal();};$('#settingsClose').onclick=()=>$('#settings').close();
 $('#photo').onchange=e=>{const f=e.target.files?.[0];if(!f)return;if(!f.type.startsWith('image/')||f.size>15e6){status('15 MB-এর ছোট ছবি বেছে নাও');return;}
  const url=URL.createObjectURL(f),probe=new Image();probe.onload=()=>{if(state.photoURL)URL.revokeObjectURL(state.photoURL);state.photoURL=url;$('#face').src=url;};probe.onerror=()=>{URL.revokeObjectURL(url);status('এই ছবি format খোলা যাচ্ছে না; JPG/PNG বেছে নাও');};probe.src=url;};
-$('#resetPhoto').onclick=()=>{if(state.photoURL)URL.revokeObjectURL(state.photoURL);state.photoURL=null;$('#face').src='./assets/sadia.jpg?v=6';$('#photo').value='';};
+$('#resetPhoto').onclick=()=>{if(state.photoURL)URL.revokeObjectURL(state.photoURL);state.photoURL=null;$('#face').src='./assets/sadia.jpg?v=7';$('#photo').value='';};
 $('#reference').onchange=e=>{const f=e.target.files?.[0];if(!f)return;if(f.size>25e6){status('25 MB-এর ছোট audio বেছে নাও');return;}if(state.audioURL)URL.revokeObjectURL(state.audioURL);state.audioURL=URL.createObjectURL(f);$('#referenceAudio').src=state.audioURL;$('#referenceAudio').hidden=false;};
 $('#testVoice').onclick=()=>{unlockAudio();refreshVoices();void speak('হ্যালো, আমি সাদিয়া এআই। তুমি কেমন আছো?',true);};
 $('#forget').onclick=async()=>{if(state.loading){$('#voiceStatus').textContent='Model download শেষ হলে cache মুছতে পারবে।';return;}endCall();
